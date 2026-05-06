@@ -1,3 +1,41 @@
+-- we create a function that lets us more easily define mappings specific
+-- for LSP related items. It sets the mode, buffer and description for us each time.
+local lsp_nmap = function(keys, func, desc)
+  if desc then
+    desc = 'LSP: ' .. desc
+  end
+  vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
+end
+local my_lsp_on_attach = function(_, bufnr)
+  local nmap = lsp_nmap;
+
+  nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
+  nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
+  nmap('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
+  nmap('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
+  nmap('gr', function() Snacks.picker.lsp_references() end, '[G]oto [R]eferences')
+  nmap('gI', function() Snacks.picker.lsp_implementations() end, '[G]oto [I]mplementation')
+  nmap('<leader>ds', function() Snacks.picker.lsp_symbols() end, '[D]ocument [S]ymbols')
+  nmap('<leader>ws', function() Snacks.picker.lsp_workspace_symbols() end, '[W]orkspace [S]ymbols')
+
+  -- See `:help K` for why this keymap
+  nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
+  nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
+
+  -- Lesser used LSP functionality
+  nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
+  nmap('<leader>wa', vim.lsp.buf.add_workspace_folder, '[W]orkspace [A]dd Folder')
+  nmap('<leader>wr', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
+  nmap('<leader>wl', function()
+    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+  end, '[W]orkspace [L]ist Folders')
+
+  -- Create a command `:Format` local to the LSP buffer
+  vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
+    vim.lsp.buf.format()
+  end, { desc = 'Format current buffer with LSP' })
+end
+
 -- NOTE: Welcome to your neovim configuration!
 -- The first 100ish lines are setup,
 -- the rest is usage of lze and various core plugins!
@@ -387,43 +425,7 @@ nixInfo.lze.load {
     -- set up our on_attach function once before the spec loads
     before = function(_)
       vim.lsp.config('*', {
-        on_attach = function(_, bufnr)
-
-          -- we create a function that lets us more easily define mappings specific
-          -- for LSP related items. It sets the mode, buffer and description for us each time.
-          local nmap = function(keys, func, desc)
-            if desc then
-              desc = 'LSP: ' .. desc
-            end
-            vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
-          end
-
-          nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
-          nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
-          nmap('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
-          nmap('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
-          nmap('gr', function() Snacks.picker.lsp_references() end, '[G]oto [R]eferences')
-          nmap('gI', function() Snacks.picker.lsp_implementations() end, '[G]oto [I]mplementation')
-          nmap('<leader>ds', function() Snacks.picker.lsp_symbols() end, '[D]ocument [S]ymbols')
-          nmap('<leader>ws', function() Snacks.picker.lsp_workspace_symbols() end, '[W]orkspace [S]ymbols')
-
-          -- See `:help K` for why this keymap
-          nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
-          nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
-
-          -- Lesser used LSP functionality
-          nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
-          nmap('<leader>wa', vim.lsp.buf.add_workspace_folder, '[W]orkspace [A]dd Folder')
-          nmap('<leader>wr', vim.lsp.buf.remove_workspace_folder, '[W]orkspace [R]emove Folder')
-          nmap('<leader>wl', function()
-            print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-          end, '[W]orkspace [L]ist Folders')
-
-          -- Create a command `:Format` local to the LSP buffer
-          vim.api.nvim_buf_create_user_command(bufnr, 'Format', function(_)
-            vim.lsp.buf.format()
-          end, { desc = 'Format current buffer with LSP' })
-        end
+        on_attach = my_lsp_on_attach,
       })
     end,
   },
@@ -475,6 +477,29 @@ nixInfo.lze.load {
       },
     },
     -- also these are regular specs and you can use before and after and all the other normal fields
+  },
+  {
+    "clangd",
+    for_cat = "cpp",
+    lsp = {
+      filetypes = { "c", "cpp", "objc", "objcpp", "cuda", "proto" },
+      -- see https://github.com/BirdeeHub/nix-wrapper-modules/discussions/309
+      on_attach = function(client, bufnr)
+        my_lsp_on_attach(client, bufnr)
+        -- the stuff they were adding that was overriding my on_attach
+        local lspcfg = nixInfo.get_nix_plugin_path "nvim-lspconfig"
+        dofile(lspcfg .. "/lsp/clangd.lua").on_attach(client, bufnr)
+        lsp_nmap('gh', ":LspClangdSwitchSourceHeader<CR>", '[G]oto [H]eader/Source')
+      end,
+      -- unneded thanks to clangd_extensions-nvim I think
+      -- settings = {
+      --   clangd_config = {
+      --     init_options = {
+      --       compilationDatabasePath="./build",
+      --     },
+      --   }
+      -- }
+    },
   },
   {
     "nixd",
