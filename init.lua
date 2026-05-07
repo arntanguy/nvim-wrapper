@@ -394,6 +394,11 @@ nixInfo.lze.load {
       vim.keymap.set('n', "<leader>sf", function() Snacks.picker.smart() end, { desc = "Smart Find Files" })
       vim.keymap.set('n', "<leader>sp", function() Snacks.picker.projects() end, { desc = "Find Projects" })
       vim.keymap.set('n', "<leader><leader>s", function() Snacks.picker.buffers() end, { desc = "Search Buffers" })
+      -- gh
+      vim.keymap.set('n', "<leader>gi", function() Snacks.picker.gh_issue() end, { desc = "GitHub Issues (open)" })
+      vim.keymap.set('n', "<leader>gI", function() Snacks.picker.gh_issue({ state = "all" }) end, { desc = "GitHub Issues (all)" })
+      vim.keymap.set('n', "<leader>gp", function() Snacks.picker.gh_pr() end, { desc = "GitHub Pull Requests (open)" })
+      vim.keymap.set('n', "<leader>gP", function() Snacks.picker.gh_pr({ state = "all" }) end, { desc = "GitHub Pull Requests (all)" })
       -- find
       vim.keymap.set('n', "<leader>ff", function() Snacks.picker.files() end, { desc = "Find Files" })
       vim.keymap.set('n', "<leader>fg", function() Snacks.picker.git_files() end, { desc = "Find Git Files" })
