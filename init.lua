@@ -311,8 +311,12 @@ nixInfo.lze.load {
           sources = {
             explorer = {
               auto_close = true,
+              include = { ".github" },
             },
           },
+        },
+        projects = {
+          dev = { "~/devel", "~/devel/mc-rtc-nix/workspace" },
         },
         git = {},
         terminal = {},
@@ -388,6 +392,7 @@ nixInfo.lze.load {
       vim.keymap.set("n", "<c-\\>", function() Snacks.terminal.open() end, { desc = 'Snacks Terminal' })
       vim.keymap.set("n", "<leader>_", function() Snacks.lazygit.open() end, { desc = 'Snacks LazyGit' })
       vim.keymap.set('n', "<leader>sf", function() Snacks.picker.smart() end, { desc = "Smart Find Files" })
+      vim.keymap.set('n', "<leader>sp", function() Snacks.picker.projects() end, { desc = "Find Projects" })
       vim.keymap.set('n', "<leader><leader>s", function() Snacks.picker.buffers() end, { desc = "Search Buffers" })
       -- find
       vim.keymap.set('n', "<leader>ff", function() Snacks.picker.files() end, { desc = "Find Files" })
