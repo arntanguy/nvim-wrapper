@@ -512,6 +512,13 @@ nixInfo.lze.load {
     },
   },
   {
+    "basedpyright",
+    for_cat = "python",
+    lsp = {
+      filetypes = { "python" },
+    },
+  },
+  {
     "nixd",
     enabled = nixInfo.isNix, -- mason doesn't have nixd
     for_cat = "nix",

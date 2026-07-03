@@ -124,6 +124,15 @@ inputs:
     ];
   };
 
+  config.specs.python = {
+    after = [ "general" ];
+    enable = true;
+    data = null;
+    extraPackages = with pkgs; [
+      basedpyright
+    ];
+  };
+
   config.specs.general = {
     # this would ensure any config included from nix in here will be ran after any provided by the `lze` spec
     # If we provided any from within either spec, anyway
