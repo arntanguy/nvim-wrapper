@@ -298,16 +298,20 @@ nixInfo.lze.load {
     "snacks.nvim",
     auto_enable = true,
     -- snacks makes a global, and then lazily loads itself
-    lazy = false,
+    -- lazy = false,
+    event = "VimEnter", -- Ensures it loads immediately on startup rather than using "lazy = false"
     -- priority only affects startup plugins
     -- unless otherwise specified by a particular handler
-    priority = 1000,
+    -- priority = 1000,
     after = function(plugin)
       -- I also like this color
       vim.api.nvim_set_hl(0, "MySnacksIndent", { fg = "#32a88f" })
+      vim.notify("snacks setup ran")
       require('snacks').setup({
         explorer = { replace_netrw = true, },
         picker = {
+          enabled = true,
+          ui_select = true,
           sources = {
             explorer = {
               auto_close = true,
@@ -358,6 +362,7 @@ nixInfo.lze.load {
           },
         },
       })
+
       -- Handle the backend of those remote commands.
       -- hopefully this can be removed one day
       nixInfo.lazygit_fix = function(path, line)
@@ -539,73 +544,84 @@ nixInfo.lze.load {
       })
       end,
     },
-  {
-      "codecompanion.nvim",
-      on_plugin = "copilot.lua",
+    {
+      "codecompanion-spinner.nvim",
       for_cat = "ai",
       event = "InsertEnter",
-     
       dep = {
-        "snacks.nvim",
-        "copilot.lua",
-        "plenary.nvim",
-        "dressing.nvim", 
-        "mini.diff",
+        "codecompanion.nvim",
       },
-
-      keys = {
-        { "<leader>aa", "<cmd>CodeCompanionActions<cr>", mode = { "n", "v" }, desc = "[A]I [A]ctions" },
-        { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", mode = { "n", "v" }, desc = "[A]I [C]hat Toggle" },
-        { "<leader>ae", "<cmd>CodeCompanionChat Add<cr>", mode = "v", desc = "[A]I Chat [E]xplain Selection" },
-        { "<leader>an", "<cmd>CodeCompanionChat<cr>", mode = "n", desc = "[A]I [N]ew Chat" },
-        { "<leader>ai", "<cmd>CodeCompanion<cr>", mode = { "n", "v" }, desc = "[A]I [I]nline Assistant" },
-        { "<leader>aq", "<cmd>CodeCompanionCmd<cr>", mode = "n", desc = "[A]I [Q]uick Command" },
-      },
-
-      after = function(name)
-        -- CodeCompanion usually requires a scheduled setup to register its 
-        -- internal sub-modules correctly without "textlock" errors.
-        vim.schedule(function()
-          require("codecompanion").setup({
-            interactions = {
-              chat = { adapter = "copilot" },
-              inline = { adapter = "copilot" },
-              agent = { adapter = "copilot" },
-            },
-            adapters = {
-              http = {
-                opts = { show_defaults = false },
-                copilot = function()
-                  return require("codecompanion.adapters").extend("copilot", {})
-                end,
-              },
-            },
-            chat = {
-              window = {
-                layout = "vertical",
-                position = "right", -- add this line
-              }
-            },
-            display = {
-              action_palette = { width = 95, height = 10 },
-              chat = { window = { layout = "vertical" } },
-              diff = {
-                enabled = true,
-                layout = "vertical",
-                opts = { "internal", "filler", "closeoff", "algorithm:patience", "followwrap", "linematch:120" },
-                provider = "default",
-              },
-            },
-          })
-
-          -- Setup WhichKey group
-          local status_wk, wk = pcall(require, "which-key")
-          if status_wk then
-            wk.add({ { "<leader>a", group = "[A]I Assistant", icon = "🤖" } })
-          end
-        end)
+      after = function()
+        require("codecompanion-spinner").setup({})
       end,
     },
+    {
+        "codecompanion.nvim",
+        on_plugin = "copilot.lua",
+        for_cat = "ai",
+        event = "InsertEnter",
+       
+        dep = {
+          "snacks.nvim",
+          "copilot.lua",
+          "plenary.nvim",
+          "codecompanion-spinner.nvim",
+          -- "dressing.nvim", 
+          -- "mini.diff",
+        },
+
+        keys = {
+          { "<leader>aa", "<cmd>CodeCompanionActions<cr>", mode = { "n", "v" }, desc = "[A]I [A]ctions" },
+          { "<leader>ac", "<cmd>CodeCompanionChat Toggle<cr>", mode = { "n", "v" }, desc = "[A]I [C]hat Toggle" },
+          { "<leader>ae", "<cmd>CodeCompanionChat Add<cr>", mode = "v", desc = "[A]I Chat [E]xplain Selection" },
+          { "<leader>an", "<cmd>CodeCompanionChat<cr>", mode = "n", desc = "[A]I [N]ew Chat" },
+          { "<leader>ai", "<cmd>CodeCompanion<cr>", mode = { "n", "v" }, desc = "[A]I [I]nline Assistant" },
+          { "<leader>aq", "<cmd>CodeCompanionCmd<cr>", mode = "n", desc = "[A]I [Q]uick Command" },
+        },
+
+        after = function(name)
+          -- CodeCompanion usually requires a scheduled setup to register its 
+          -- internal sub-modules correctly without "textlock" errors.
+            require("codecompanion").setup({
+              interactions = {
+                chat = { adapter = "copilot" },
+                inline = { adapter = "copilot" },
+                agent = { adapter = "copilot" },
+              },
+              adapters = {
+                http = {
+                  opts = { show_defaults = false },
+                  copilot = function()
+                    return require("codecompanion.adapters").extend("copilot", {})
+                  end,
+                },
+              },
+              chat = {
+                window = {
+                  layout = "vertical",
+                  position = "right", -- add this line
+                }
+              },
+              display = {
+                action_palette = { provider = "snacks",  width = 95, height = 10 },
+                chat = { window = { layout = "vertical" } },
+                diff = {
+                  enabled = true,
+                  layout = "vertical",
+                  opts = { "internal", "filler", "closeoff", "algorithm:patience", "followwrap", "linematch:120" },
+                  provider = "default",
+                },
+              },
+            })
+
+            -- Setup WhichKey group
+            local status_wk, wk = pcall(require, "which-key")
+            if status_wk then
+              wk.add({ { "<leader>a", group = "[A]I Assistant", icon = "🤖" } })
+            end
+        end,
+      },
+    
   {
     "clangd",
     for_cat = "cpp",
@@ -840,6 +856,15 @@ nixInfo.lze.load {
     end,
   },
   {
+    "oil.nvim",
+    auto_enable = true,
+    event = "VimEnter", -- Ensures it loads immediately on startup rather than using "lazy = false"
+    load = nixInfo.lze.loaders.with_after,
+    after = function (_)
+      require("oil").setup({})
+    end
+  },
+  {
     "cmp-cmdline",
     auto_enable = true,
     on_plugin = { "blink.cmp" },
@@ -875,7 +900,7 @@ nixInfo.lze.load {
           preset = 'default',
         },
         cmdline = {
-          enabled = false,
+          enabled = true,
           completion = {
             menu = {
               auto_show = true,

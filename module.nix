@@ -138,6 +138,7 @@ inputs:
     lazy = false;
     data = with pkgs.vimPlugins; [
       codecompanion-nvim
+      codecompanion-spinner-nvim
       plenary-nvim
       copilot-lua
       blink-copilot
@@ -181,16 +182,19 @@ inputs:
       fidget-nvim
       nvim-lint
       conform-nvim
+      oil-nvim
       nvim-treesitter-textobjects
       # treesitter + grammars
-      nvim-treesitter.withAllGrammars
+      # nvim-treesitter.withAllGrammars
       # This is for if you only want some of the grammars
-      # (nvim-treesitter.withPlugins (
-      #   plugins: with plugins; [
-      #     nix
-      #     lua
-      #   ]
-      # ))
+      (nvim-treesitter.withPlugins (
+        plugins: with plugins; [
+          nix
+          lua
+          yaml
+          cpp
+        ]
+      ))
     ];
   };
 
