@@ -1,6 +1,7 @@
 {
   description = "Flake exporting a configured neovim package";
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  # inputs.nixpkgs.url = "path:/home/arnaud/devel/nixpkgs";
   inputs.wrappers.url = "github:BirdeeHub/nix-wrapper-modules";
   inputs.wrappers.inputs.nixpkgs.follows = "nixpkgs";
   # Demo on fetching plugins from outside nixpkgs
@@ -42,7 +43,7 @@
       packages = forAllSystems (
         system:
         let
-          pkgs = import nixpkgs { inherit system; };
+           pkgs = import nixpkgs { inherit system; config.allowUnfree = true; };
         in
         {
           neovim = self.wrappers.neovim.wrap { inherit pkgs; };
